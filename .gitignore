@@ -1,11 +1,5 @@
-# Manim output
+# Manim output (all generated renders land under media/)
 media/
-images/
-videos/
-*.mp4
-*.mov
-*.gif
-*.png
 
 # Python
 .venv/

@@ -15,7 +15,6 @@ from manim import (
     FadeIn,
     Indicate,
     ValueTracker,
-    always_redraw,
     BLUE,
     YELLOW,
     GREY_B,
@@ -41,20 +40,27 @@ class Gaussian(Scene):
         label = MathTex(r"y = e^{-x^2}").scale(1.2).to_edge(UP)
 
         # --- a dot that rides along the curve ---
+        # Drive the dot with a ValueTracker; an updater keeps it on the curve.
         t = ValueTracker(-3.0)
-        marker = always_redraw(
-            lambda: Dot(
-                axes.c2p(t.get_value(), float(np.exp(-t.get_value() ** 2))),
-                color=YELLOW,
-            )
-        )
+
+        def gaussian(x: float) -> float:
+            return float(np.exp(-x * x))
+
+        marker = Dot(axes.c2p(-3.0, gaussian(-3.0)), color=YELLOW)
 
         # ================= SCRIPT =================
         self.play(Create(axes), run_time=1.0)
         self.play(Write(label), run_time=0.6)
         self.play(Create(curve), run_time=1.6)
-        self.add(marker)
+
+        # Reveal the dot first, THEN attach the updater — a live updater would
+        # otherwise overwrite the FadeIn's opacity/scale every frame.
         self.play(FadeIn(marker, scale=0.5), run_time=0.3)
+        marker.add_updater(
+            lambda m: m.move_to(axes.c2p(t.get_value(), gaussian(t.get_value())))
+        )
         self.play(t.animate.set_value(3.0), run_time=3.0)
+        marker.clear_updaters()
+
         self.play(Indicate(marker))
         self.wait(0.8)
