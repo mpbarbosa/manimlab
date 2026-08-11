@@ -1,0 +1,21 @@
+# Manim output
+media/
+images/
+videos/
+*.mp4
+*.mov
+*.gif
+*.png
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
