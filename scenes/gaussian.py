@@ -17,6 +17,7 @@ from manim import (
     FadeIn,
     Indicate,
     ValueTracker,
+    linear,
     BLUE,
     YELLOW,
     GREY_B,
@@ -80,7 +81,8 @@ class Gaussian(Scene):
         x_dec.add_updater(lambda d: d.set_value(t.get_value()))
         y_dec.add_updater(lambda d: d.set_value(gaussian(t.get_value())))
 
-        self.play(t.animate.set_value(3.0), run_time=3.0)
+        # Slow, steady sweep across the curve (linear = constant speed).
+        self.play(t.animate.set_value(3.0), run_time=7.0, rate_func=linear)
 
         marker.clear_updaters()
         x_dec.clear_updaters()
