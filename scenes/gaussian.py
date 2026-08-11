@@ -36,7 +36,11 @@ class Gaussian(Scene):
             x_length=10,
             y_length=5,
             axis_config={"color": GREY_B, "include_tip": True},
+            y_axis_config={"decimal_number_config": {"num_decimal_places": 1}},
         )
+        # Numeric labels on the tick marks. Omit both zeros so the two axes'
+        # "0" don't collide at the origin.
+        axes.add_coordinates([-3, -2, -1, 1, 2, 3], [0.5, 1.0], font_size=24)
 
         # --- the curve: a Gaussian  y = e^(-x^2) ---
         curve = axes.plot(lambda x: np.exp(-x * x), x_range=[-3, 3], color=BLUE)
