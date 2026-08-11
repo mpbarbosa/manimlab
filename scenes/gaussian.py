@@ -10,6 +10,8 @@ from manim import (
     Axes,
     Dot,
     MathTex,
+    DecimalNumber,
+    VGroup,
     Create,
     Write,
     FadeIn,
@@ -19,6 +21,8 @@ from manim import (
     YELLOW,
     GREY_B,
     UP,
+    RIGHT,
+    UL,
 )
 
 
@@ -48,6 +52,18 @@ class Gaussian(Scene):
 
         marker = Dot(axes.c2p(-3.0, gaussian(-3.0)), color=YELLOW)
 
+        # --- live (x, y) readout of the marker's position ---
+        # DecimalNumber updates glyphs cheaply per frame; a MathTex rebuilt each
+        # frame would recompile LaTeX and make the render crawl.
+        x_dec = DecimalNumber(-3.0, num_decimal_places=2, include_sign=True)
+        y_dec = DecimalNumber(gaussian(-3.0), num_decimal_places=2)
+        x_dec.set_color(YELLOW)
+        y_dec.set_color(YELLOW)
+        readout = VGroup(
+            MathTex(r"(x,\,y) = ("), x_dec, MathTex(","), y_dec, MathTex(")")
+        )
+        readout.arrange(RIGHT, buff=0.12).scale(0.8).to_corner(UL)
+
         # ================= SCRIPT =================
         self.play(Create(axes), run_time=1.0)
         self.play(Write(label), run_time=0.6)
@@ -56,11 +72,19 @@ class Gaussian(Scene):
         # Reveal the dot first, THEN attach the updater — a live updater would
         # otherwise overwrite the FadeIn's opacity/scale every frame.
         self.play(FadeIn(marker, scale=0.5), run_time=0.3)
+        self.play(FadeIn(readout, shift=0.2 * UP), run_time=0.3)
+
         marker.add_updater(
             lambda m: m.move_to(axes.c2p(t.get_value(), gaussian(t.get_value())))
         )
+        x_dec.add_updater(lambda d: d.set_value(t.get_value()))
+        y_dec.add_updater(lambda d: d.set_value(gaussian(t.get_value())))
+
         self.play(t.animate.set_value(3.0), run_time=3.0)
+
         marker.clear_updaters()
+        x_dec.clear_updaters()
+        y_dec.clear_updaters()
 
         self.play(Indicate(marker))
         self.wait(0.8)
