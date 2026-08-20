@@ -19,6 +19,7 @@ from manim import (
     PI,
     DEGREES,
     RIGHT,
+    UP,
 )
 
 
@@ -52,4 +53,14 @@ class DrawCircle(Scene):
         circle_b1 = Circle(radius=r_b1, color=GREEN).move_to(touch + RIGHT * r_b1)
         label_b1 = Text("B1", color=GREEN).scale(0.5).move_to(circle_b1.get_center())
         self.play(Create(circle_b1), FadeIn(label_b1))
+        self.wait(0.5)
+
+        # Circle B2: external to Circle A, tangent at Circle A's 90 degree point.
+        # Center sits one B2-radius beyond the touch point along the outward
+        # (+y) normal.
+        touch_90 = circle_a.point_at_angle(PI / 2)   # (0, 2, 0)
+        r_b2 = 1.0
+        circle_b2 = Circle(radius=r_b2, color=GREEN).move_to(touch_90 + UP * r_b2)
+        label_b2 = Text("B2", color=GREEN).scale(0.5).move_to(circle_b2.get_center())
+        self.play(Create(circle_b2), FadeIn(label_b2))
         self.wait(1.0)
