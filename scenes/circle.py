@@ -13,10 +13,14 @@ from manim import (
     FadeIn,
     Rotate,
     VGroup,
+    ValueTracker,
+    rotate_vector,
+    linear,
     BLUE,
     GREEN,
     YELLOW,
     PI,
+    TAU,
     DEGREES,
     RIGHT,
     UP,
@@ -132,4 +136,63 @@ class DrawCircle(Scene):
             Rotate(group_b4, angle=-360 * DEGREES),
             run_time=3.0,
         )
+        self.wait(0.5)
+
+        # Attach every B circle to Circle A: each B keeps a fixed offset from A's
+        # center via an updater, so moving A drags the B circles along.
+        a_group = VGroup(circle_a, label_a, dots)
+        b_groups = [group_b1, group_b2, group_b3, group_b4]
+        a_center = circle_a.get_center()
+        for gb in b_groups:
+            offset = gb.get_center() - a_center
+            gb.add_updater(lambda m, o=offset: m.move_to(circle_a.get_center() + o))
+
+        # Run A back and forth; the attached B circles follow.
+        self.play(a_group.animate.shift(RIGHT * 2.5), run_time=1.5)
+        self.play(a_group.animate.shift(LEFT * 5.0), run_time=2.5)
+        self.play(a_group.animate.shift(RIGHT * 2.5), run_time=1.5)
+
+        for gb in b_groups:
+            gb.clear_updaters()
+        self.wait(0.5)
+
+        # Rotate A with the B circles attached: the whole rigid assembly turns
+        # about Circle A's center, so each attached B orbits A.
+        assembly = VGroup(a_group, *b_groups)
+        self.play(
+            Rotate(assembly, angle=360 * DEGREES, about_point=circle_a.get_center()),
+            run_time=3.0,
+        )
+        self.wait(0.5)
+
+        # Rotate A about its own center. B stays attached to A -- each B's center
+        # revolves around A as A turns (driven by phi) -- while ALSO spinning
+        # independently about its own center at its own rate.
+        a_center = circle_a.get_center()
+        phi = ValueTracker(0.0)               # A's angle; also orbits the Bs
+        spin_rates = {                        # each B's own spin (rad/s), independent
+            group_b1: 2.0,
+            group_b2: -3.0,
+            group_b3: 2.5,
+            group_b4: -1.5,
+        }
+        base_offsets = {gb: gb.get_center() - a_center for gb in spin_rates}
+
+        def attach(rate, offset):
+            def updater(m, dt):
+                m.rotate(rate * dt, about_point=m.get_center())               # own spin
+                m.move_to(a_center + rotate_vector(offset, phi.get_value()))  # orbit
+            return updater
+
+        for gb, rate in spin_rates.items():
+            gb.add_updater(attach(rate, base_offsets[gb]))
+
+        self.play(
+            Rotate(a_group, angle=360 * DEGREES, about_point=a_center),
+            phi.animate.set_value(TAU),
+            run_time=4.0,
+            rate_func=linear,
+        )
+        for gb in spin_rates:
+            gb.clear_updaters()
         self.wait(1.0)
