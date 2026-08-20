@@ -22,7 +22,16 @@ from manim import (
     UP,
     LEFT,
     DOWN,
+    ORIGIN,
 )
+
+
+def cardinal_dots(circle, color=YELLOW, radius=0.08):
+    """Dots on a circle's edge at 0, 90, 180 and 270 degrees."""
+    angles = [0, PI / 2, PI, 3 * PI / 2]
+    return VGroup(
+        *[Dot(circle.point_at_angle(a), color=color, radius=radius) for a in angles]
+    )
 
 
 class DrawCircle(Scene):
@@ -85,4 +94,26 @@ class DrawCircle(Scene):
         circle_b4 = Circle(radius=r_b4, color=GREEN).move_to(touch_270 + DOWN * r_b4)
         label_b4 = Text("B4", color=GREEN).scale(0.5).move_to(circle_b4.get_center())
         self.play(Create(circle_b4), FadeIn(label_b4))
+        self.wait(0.5)
+
+        # Dots at 0, 90, 180 and 270 degrees on every B circle (smaller, to suit
+        # the smaller radius).
+        dots_b1 = cardinal_dots(circle_b1, radius=0.06)
+        dots_b2 = cardinal_dots(circle_b2, radius=0.06)
+        dots_b3 = cardinal_dots(circle_b3, radius=0.06)
+        dots_b4 = cardinal_dots(circle_b4, radius=0.06)
+        self.play(FadeIn(VGroup(dots_b1, dots_b2, dots_b3, dots_b4), scale=0.5))
+        self.wait(0.5)
+
+        # Rotate every circle together, as one rigid group, one full turn about
+        # Circle A's center (the origin).
+        everything = VGroup(
+            circle_a, label_a, dots,
+            circle_b1, label_b1, dots_b1,
+            circle_b2, label_b2, dots_b2,
+            circle_b3, label_b3, dots_b3,
+            circle_b4, label_b4, dots_b4,
+        )
+        self.play(Rotate(everything, angle=360 * DEGREES, about_point=ORIGIN),
+                  run_time=3.0)
         self.wait(1.0)
