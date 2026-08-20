@@ -116,4 +116,20 @@ class DrawCircle(Scene):
         )
         self.play(Rotate(everything, angle=360 * DEGREES, about_point=ORIGIN),
                   run_time=3.0)
+        self.wait(0.5)
+
+        # Rotate every B circle independently, each about its own center (so the
+        # labels and dots spin in place). Played together, but each is its own
+        # rotation; alternating directions makes the independence clear.
+        group_b1 = VGroup(circle_b1, label_b1, dots_b1)
+        group_b2 = VGroup(circle_b2, label_b2, dots_b2)
+        group_b3 = VGroup(circle_b3, label_b3, dots_b3)
+        group_b4 = VGroup(circle_b4, label_b4, dots_b4)
+        self.play(
+            Rotate(group_b1, angle=360 * DEGREES),
+            Rotate(group_b2, angle=-360 * DEGREES),
+            Rotate(group_b3, angle=360 * DEGREES),
+            Rotate(group_b4, angle=-360 * DEGREES),
+            run_time=3.0,
+        )
         self.wait(1.0)
