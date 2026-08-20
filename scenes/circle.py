@@ -14,9 +14,11 @@ from manim import (
     Rotate,
     VGroup,
     BLUE,
+    GREEN,
     YELLOW,
     PI,
     DEGREES,
+    RIGHT,
 )
 
 
@@ -40,4 +42,14 @@ class DrawCircle(Scene):
         # Rotate Circle A (with its label and dots) two full turns, then stop.
         circle_group = VGroup(circle_a, label_a, dots)
         self.play(Rotate(circle_group, angle=720 * DEGREES), run_time=3.0)
+        self.wait(0.5)
+
+        # Circle B1: external to Circle A, tangent at Circle A's 0 degree point.
+        # For external tangency, B1's center sits one B1-radius beyond the touch
+        # point, along the outward (+x) normal.
+        touch = circle_a.point_at_angle(0)          # (2, 0, 0)
+        r_b1 = 1.0
+        circle_b1 = Circle(radius=r_b1, color=GREEN).move_to(touch + RIGHT * r_b1)
+        label_b1 = Text("B1", color=GREEN).scale(0.5).move_to(circle_b1.get_center())
+        self.play(Create(circle_b1), FadeIn(label_b1))
         self.wait(1.0)
