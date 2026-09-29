@@ -12,6 +12,7 @@ from manim import (
     Create,
     FadeIn,
     Rotate,
+    TracedPath,
     VGroup,
     ValueTracker,
     rotate_vector,
@@ -19,6 +20,7 @@ from manim import (
     BLUE,
     GREEN,
     YELLOW,
+    WHITE,
     PI,
     TAU,
     DEGREES,
@@ -36,6 +38,24 @@ def cardinal_dots(circle, color=YELLOW, radius=0.08):
     return VGroup(
         *[Dot(circle.point_at_angle(a), color=color, radius=radius) for a in angles]
     )
+
+
+def neon_trace(point_func, color):
+    """A neon-glow traced path: wide dim halo layers under a bright white core.
+
+    Manim has no real glow for strokes, so several translucent copies of
+    increasing width fake the halo, and a thin bright core sits on top. On a
+    black background the overlaps read as neon light.
+    """
+    layers = VGroup()
+    for width, opacity in [(22, 0.05), (14, 0.09), (8, 0.16), (4, 0.35)]:
+        halo = TracedPath(point_func, stroke_color=color, stroke_width=width)
+        halo.set_stroke(color, width=width, opacity=opacity)
+        layers.add(halo)
+    core = TracedPath(point_func, stroke_color=WHITE, stroke_width=1.5)
+    core.set_stroke(WHITE, width=1.5, opacity=0.9)
+    layers.add(core)
+    return layers
 
 
 class DrawCircle(Scene):
@@ -187,12 +207,27 @@ class DrawCircle(Scene):
         for gb, rate in spin_rates.items():
             gb.add_updater(attach(rate, base_offsets[gb]))
 
+        # Every dot on every B circle traces its full path during the motion,
+        # rendered with a neon-glow effect. Each dot combines orbit (around A)
+        # with independent self-spin, so the trajectory is an epitrochoid-like
+        # curve. Neon colour by B circle.
+        dot_groups = [dots_b1, dots_b2, dots_b3, dots_b4]
+        neon_colors = ["#FF2E88", "#18F0FF", "#66FF66", "#C86BFF"]
+        traces = VGroup(
+            *[
+                neon_trace(d.get_center, col)
+                for dg, col in zip(dot_groups, neon_colors)
+                for d in dg
+            ]
+        )
+        self.add(traces)
+
         self.play(
             Rotate(a_group, angle=360 * DEGREES, about_point=a_center),
             phi.animate.set_value(TAU),
-            run_time=4.0,
+            run_time=6.0,
             rate_func=linear,
         )
         for gb in spin_rates:
             gb.clear_updaters()
-        self.wait(1.0)
+        self.wait(2.0)
